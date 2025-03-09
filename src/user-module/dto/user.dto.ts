@@ -1,7 +1,8 @@
-import {IsString, IsEmail} from "class-validator"
-export class UserDto {
-    @IsString()
+import { IsDefined, IsEmail, IsString } from "class-validator";
+
+export class UserDto{
     @IsEmail()
+    @IsString()
     @IsDefined()
     email: string;
 
@@ -10,9 +11,9 @@ export class UserDto {
     username: string;
 }
 
-export class UserParamsDto{
-    @IsString()
+export class userParamDto{
     @IsEmail()
     @IsDefined()
-    email: string;
+    @IsString()
+    email: string
 }

@@ -1,36 +1,45 @@
-import { Body, Controller, Delete, Get, Param, Post, UsePipes,ValidationPipe } from '@nestjs/common';
+import { BadRequestException, Body, Controller, Delete, Get, Header, HttpCode, HttpStatus, Param, ParseBoolPipe, ParseIntPipe, Post, Query, Req, Res, UseFilters, UseGuards, UsePipes,ValidationPipe } from '@nestjs/common';
 import { UserService } from './user.service';
 import { User } from './interface/user';
-import {UserDto } from "./dto/user.dto.ts"
-import {Request} from "express";
+import { UserDto, userParamDto } from './dto/user.dto';
+import { Request, Response } from 'express';
+import { HttpExceptionFilter } from './filter';
+import { AuthGuard } from './guard';
+
 @Controller("user")
+@UseGuards(AuthGuard)
 export class UserController {
-  constructor(private readonly userService: UserService) {}
+  constructor(private readonly userService: UserService){}
 
   @Get()
-  getUsers(
-    @Param("id", ParseIntPipe) id: number,
-    @Query("sort") sort: boolean,
-    @Body() data: UserDto
-  ): User[] {
+  getUsers( @Param("id", ParseIntPipe) id: number,
+  @Query("sort", ParseBoolPipe) sort: boolean,
+  @Body() user: UserDto,
+  ): User[]{
     return this.userService.getUsers()
   }
 
-  @HttpCode(204)
-  @Header("Cache-Control", "none");
+
   @Get("/:email")
-  getUser(@Param() param: UserParamsDto, @Req() req: Request): User{
-    return this.userService.getUser(param.email)
+  @UseFilters(new HttpExceptionFilter())
+  @UsePipes(new ValidationPipe())
+  async getUser(@Param() params: userParamDto, @Req() req: Request, @Res() res: Response): Promise<User>{
+    try{
+      return await this.userService.getUser(params.email)
+    }catch(err){
+      throw new BadRequestException("failed")
+    }
   }
 
   @Post()
   @UsePipes(new ValidationPipe())
   async postUser(@Body() user: UserDto): Promise<User>{
-    return this.userService.addUser(user)
+    return this.userService.addUser(user);
   }
 
-  @Delete("/:email")
-  deleteUser(@Param() params: UserParamsDto): User[]{
+  @Delete(":email")
+  @UsePipes(new ValidationPipe())
+  deleteUser(@Param() params: userParamDto): User[]{
     return this.userService.deleteUser(params.email)
   }
 }
