@@ -2,7 +2,8 @@ import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { TaskModule } from './core/task-module/task.module';
-import { DatabaseModule } from './database/database.model';
+import { DatabaseModule } from './database/database.module';
+
 
 @Module({
   imports: [TaskModule, DatabaseModule],
@@ -10,3 +11,7 @@ import { DatabaseModule } from './database/database.model';
   providers: [AppService],
 })
 export class AppModule {}
+
+
+
+
